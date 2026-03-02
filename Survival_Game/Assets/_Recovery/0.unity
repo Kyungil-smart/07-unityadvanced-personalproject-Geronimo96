@@ -504,11 +504,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 597833244}
-  - component: {fileID: 597833245}
   - component: {fileID: 597833242}
   - component: {fileID: 597833241}
   - component: {fileID: 597833240}
   - component: {fileID: 597833246}
+  - component: {fileID: 597833245}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -624,14 +624,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e324d36790ddf3349a5c9173f20744cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  walkSpeed: 7
-  runSpeed: 10
-  crouchSpeed: 2
-  jumpForce: 5
-  crouuchPosY: 0
-  lookSensitivity: 4.72
-  cameraRotationLimit: 55
-  playerCamera: {fileID: 330585545}
+  walkSpeed: 17.38
+  lookSensitivity: 0
+  cameraRotationLimit: 0
+  playerCamera: {fileID: 0}
 --- !u!54 &597833246
 Rigidbody:
   m_ObjectHideFlags: 0
