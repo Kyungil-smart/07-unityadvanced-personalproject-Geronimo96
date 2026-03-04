@@ -1,5 +1,7 @@
 using JetBrains.Rider.Unity.Editor;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -52,6 +54,8 @@ public class PlayerController : MonoBehaviour
         capsuleCollider = GetComponent<CapsuleCollider>();
         myRigid = GetComponent<Rigidbody>();
         applySpeed = walkSpeed;
+
+        // 초기화
         originPosY = playerCamera.transform.localPosition.y;
         applyCrouchPosY = originPosY;
     }
@@ -75,17 +79,22 @@ public class PlayerController : MonoBehaviour
         {
             isRunning();
         }
-        else
+        if (Input.GetKeyUp(KeyCode.LeftShift))
         {
             isNotRunning();
         }
     }
 
+    // 달리기 실행
     private void isRunning()
     {
+        // 웅크린 상태에서 달릴 시 웅크림 해제
+        if (isCrouch) Crouch();
+
         applySpeed = runSpeed;
         isRun = true;
     }
+    // 달리기 해제
     private void isNotRunning()
     {
         applySpeed = walkSpeed;
@@ -105,21 +114,68 @@ public class PlayerController : MonoBehaviour
     // 점프할 때는 플레이어의 현재 속도에 점프 힘을 더하는 방식으로 구현한다. 이렇게 하면 플레이어가 이동 중에도 점프할 수 있다.
     private void Jump()
     {
+        // 웅크린 상태에서 점프 시 웅크림 해제
+        if (isCrouch) Crouch();
+
         myRigid.linearVelocity = transform.up * jumpForce;
     }
 
+    // 웅크리기 시도
     private void TryCrouch()
     {
-        if (Input.GetKey(KeyCode.LeftControl))
+        if (Input.GetKeyDown(KeyCode.LeftControl))
         {
             Crouch();
         }
-        else
-        {
-            NotCrouch();
-        }
     }
 
+    //웅크리기 동작
+    private void Crouch()
+    {
+        isCrouch = !isCrouch;
+
+        if (isCrouch)
+        {   
+            applySpeed = crouchSpeed;
+            applyCrouchPosY = crouuchPosY;
+
+        }
+        else
+        {    
+            applySpeed = walkSpeed;
+            applyCrouchPosY = originPosY;
+        }
+
+        StartCoroutine(CrouchCoroutine());
+    }
+
+    // 웅크리기 부드러운 동작을 위한 코루틴 함수
+    IEnumerator CrouchCoroutine()
+    {
+        float _posY = playerCamera.transform.localPosition.y;
+        int count = 0;
+
+        while (_posY != applyCrouchPosY)
+        {
+            _posY = Mathf.Lerp(_posY, applyCrouchPosY, Time.deltaTime * 5f);
+            playerCamera.transform.localPosition = new Vector3(
+                playerCamera.transform.localPosition.x,
+                _posY,
+                playerCamera.transform.localPosition.z);
+
+            // 보간 단점 보완 ( 정확한 위치에 일치시켜라 )
+            count++;
+            if (count == 15) break;
+
+            yield return null;
+        }
+        playerCamera.transform.localPosition = new Vector3(
+            playerCamera.transform.localPosition.x,
+            applyCrouchPosY,
+            playerCamera.transform.localPosition.z);
+    }
+
+    // 지면 체크
     private void IsGround()
     {
         // 플레이어가 지면에 닿았는지 확인하기 위해, 플레이어의 위치에서
@@ -142,6 +198,7 @@ public class PlayerController : MonoBehaviour
         myRigid.MovePosition(transform.position + velocity * Time.deltaTime);
     }
 
+    // 
     private void CameraRotation()
     {
         // 마우스의 y축 움직임을 카메라의 x축 회전에 적용한다. (마우스의 x축 움직임은 캐릭터의 y축 회전에 적용한다.)
