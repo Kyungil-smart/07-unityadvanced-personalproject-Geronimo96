@@ -1,1 +1,90 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=22871644&assignment_repo_type=AssignmentRepo)
+유니티 6로 구현한 서바이벌 게임입니다. (미완성)
+
+# 🪓 Unity6 Survival Game
+Unity를 사용하여 구현한 1인칭 슈팅(FPS) 및 근접 공격 시스템의 핵심 로직입니다. 
+플레이어의 이동부터 총기 반동, 정조준(Fine Sight), 그리고 근접 무기(Hand)를 이용한 타격 판정까지 포함되어 있습니다.
+
+---
+
+## 🕹 조작법 (Controls)
+
+| 키 (Key) | 동작 (Action) |
+| --- | --- |
+| **W, A, S, D** | 이동 (Move) |
+| **Mouse Left Click** | 발사 (Fire) / 근접 공격 (Attack) |
+| **Mouse Right Click** | 정조준 (Fine Sight) |
+| **Left Shift** | 달리기 (Run) - 정조준 시 자동 해제 |
+| **Left Ctrl** | 앉기 (Crouch) - 이동 속도 감소 |
+| **Space** | 점프 (Jump) - 앉기 상태 시 자동 해제 |
+| **R** | 재장전 (Reload) |
+
+---
+
+## 🚀 주요 기능
+
+### 1. 플레이어 컨트롤러 (`PlayerController.cs`)
+
+* **다양한 이동 상태**: 걷기, 달리기, 앉기(Crouch), 점프 기능을 지원합니다.
+* **카메라 및 캐릭터 회전**: 마우스 입력을 통한 상하 카메라 회전 제한(Clamp) 및 좌우 캐릭터 회전을 구현했습니다.
+* **상태 기반 속도 제어**: 달리기 시 정조준 해제, 앉기 시 이동 속도 감소 등 상태별 상호작용 로직이 포함되어 있습니다.
+
+### 2. 총기 시스템 (`Gun.cs`, `GunController.cs`)
+
+* **사격 로직**: 연사 속도(Fire Rate) 계산 및 탄환 소모 기능을 제공합니다.
+* **재장전(Reload)**: 애니메이션과 연동된 코루틴 기반의 재장전 시스템을 구현했습니다.
+* **정조준(Fine Sight)**: 마우스 우클릭을 통해 총기의 위치를 부드럽게 보간(Lerp)하여 정조준 모드로 전환합니다.
+* **절차적 반동(Procedural Recoil)**: 사격 시 총기가 Z축 방향으로 밀려났다가 복귀하는 반동 코루틴을 구현했습니다.
+
+### 3. 근접 공격 시스템 (`Hand.cs`, `HandController.cs`)
+
+* **타격 판정**: `Raycast`를 사용하여 공격 범위 내의 오브젝트를 검출합니다.
+* **공격 딜레이 제어**: 코루틴을 활용하여 애니메이션의 특정 시점에만 공격 판정(`isSwing`)이 활성화되도록 정밀하게 설계되었습니다.
+
+---
+
+## 🛠 기술 스택 및 구현 상세
+
+### 적용된 프로그래밍 기법
+
+* **Coroutine**: 재장전, 반동, 웅크리기 동작 등 시간의 흐름에 따른 부드러운 상태 변화를 처리하기 위해 적극 활용했습니다.
+* **Vector3.Lerp & Mathf.Lerp**: 카메라의 위치 이동이나 총기 반동 복귀 시 부드러운 시각적 효과를 위해 선형 보간을 사용했습니다.
+* **Physics.Raycast**: 총기 사격(확장 가능) 및 근접 공격의 충돌 감지를 위해 유니티 물리 엔진을 사용했습니다.
+
+### 코딩 표준
+
+* **Pope Kim C# 코딩 표준**을 준수하여 가독성 높고 유지보수가 용이한 코드를 작성했습니다.
+
+* ## 🛠 기술적 차별점
+
+* **Pope Kim C# Coding Standard 준수**: 네이밍 컨벤션과 코드 구조를 통일하여 협업 시 가독성을 극대화했습니다.
+* **효율적인 리소스 관리**: `StopAllCoroutines()`를 적절히 활용하여 새로운 동작(사격, 정조준 등) 발생 시 이전 보간 작업이 충돌하지 않도록 최적화했습니다.
+* **객체지향 설계**: `Gun`과 `Hand` 클래스를 분리하여 향후 인벤토리 시스템이나 다양한 무기 타입 확장 시 유연하게 대응할 수 있습니다.
+
+
+---
+
+## 📂 파일 구조
+
+| 파일명 | 역할 |
+| --- | --- |
+| **PlayerController.cs** | 플레이어의 입력 처리, 이동, 점프, 카메라 회전 로직 담당 |
+| **GunController.cs** | 총기 사격, 재장전, 정조준 및 반동 시스템 제어 |
+| **HandController.cs** | 근접 무기 공격 로직 및 Raycast 기반 타격 판정 |
+| **Gun.cs / Hand.cs** | 각 무기의 속성(데미지, 사거리, 반동 등)을 정의하는 데이터 클래스 |
+
+---
+
+## 📝 코드 예시 (반동 시스템)
+
+```csharp
+// GunController.cs 내의 반동 구현 예시
+IEnumerator RetroActionCoroutine()
+{
+    // 정조준 여부에 따른 반동 목표 위치 설정
+    Vector3 recoilBack = new Vector3(originPos.x, originPos.y, currentGun.retroActionForce);
+    
+    // ... Lerp를 이용한 위치 보간 로직
+}
+
+```
+
